@@ -161,7 +161,7 @@ public:
         {
             sfmt_t sfmtSeed_private;
             sfmt_init_gen_rand(&sfmtSeed_private, omp_get_thread_num()+int(time(NULL)));
-            
+
             vector<int> c_visited(n);
             vector<int> visited(n);
             vector<int> depth(n);
@@ -182,7 +182,7 @@ public:
     		for(int i = 0; i < theta_per_core; i++) {
                 long b = BFS(v_c, i, c_visited, beta, has_beta, sfmtSeed_private);
                 avg_bfs_size_private += b;
-    			
+
                 // generate a random node u to start mBFS from
     			int u = sfmt_genrand_uint32(&sfmtSeed_private) % n;
                 while(u == v_c) u = sfmt_genrand_uint32(&sfmtSeed_private) % n;
@@ -205,6 +205,11 @@ public:
 
             #pragma omp critical
             {
+				cout << "Thread: " << omp_get_thread_num() << " hT_private contains "<< hT_private.size() << " entries" << endl;
+				int full_htp_size = 0;
+				for(auto& v: hT_private)
+					full_htp_size += v.size();
+				cout << "Thread: " << omp_get_thread_num() << " full hT_private size: " << full_htp_size << endl;
                 successes += successes_private;
                 avg_bfs_size += avg_bfs_size_private;
                 avg_success_bfs_size += avg_success_bfs_size_private;
@@ -215,6 +220,13 @@ public:
                 hT.insert(hT.end(), hT_private.begin(), hT_private.end());
             }
         }
+
+		cout << "hT contains " << hT.size() << " entries" << endl;
+		int full_ht_size = 0;
+		for(auto& v: hT)
+			full_ht_size += v.size();
+		cout << "Full hT size: " << full_ht_size << endl;
+		cout << sizeof(vector<int>) << endl;
 
 		cout << "Time to generate hypergraph: " << (omp_get_wtime() - start) << " s" << endl;
 		start = clock();
@@ -251,7 +263,7 @@ public:
 	double node_selection(long num_sketches) {
 
 		clock_t start = clock();
-        
+
         vector<int> sketches_removed(hT.size());
         //map<long,int> sketches_removed;
         //for ( const auto &p : sketch_index )
@@ -273,7 +285,7 @@ public:
             max_node_count = -1;
             for (int i = 0; i < n; i++) {
                 if (node_sketch_count[i] > max_node_count) {
-                    max_node = i; 
+                    max_node = i;
                     max_node_count = node_sketch_count[i];
                 }
             }
@@ -293,7 +305,7 @@ public:
                     sketches_removed[curr_sketch] = 1;
                 }
             }
-        } 
+        }
 
         cout << "Time to get seed set: " << (clock() - start) / (double)(CLOCKS_PER_SEC) << " s" << endl;
 
@@ -336,7 +348,7 @@ public:
 
                 double sum_private, subwidth;
                 int bfs_num = 0;
-                
+
                 vector<int> c_visited(n);
                 vector<int> visited(n);
                 vector<int> depth(n);
@@ -348,7 +360,7 @@ public:
 
                 for(int i = 0; i < c_i_per_core; i++) {
                     BFS(v_c, bfs_num, c_visited, beta, has_beta, sfmtSeed_private);
-                    
+
                     // generate a random node u to start mBFS from
                     int u = sfmt_genrand_uint32(&sfmtSeed_private) % n;
                     while(u == v_c) u = sfmt_genrand_uint32(&sfmtSeed_private) % n;
@@ -394,15 +406,15 @@ public:
         long theta_prime = (2.0 + eps_prime) * ( n * log(n) ) / ( eps_prime * eps_prime * kpt_star);
 
         cout << "theta_prime = " << theta_prime << endl;
-        
+
         generate_hypergraph(theta_prime);
 
         double kpt_prime = node_selection(theta_prime);
-        
+
         kpt_prime /= 1.0 + eps_prime;
 
         cout << "kpt_prime = " << kpt_prime << endl;
-        
+
         return max(kpt_prime, kpt_star);
     }
 
