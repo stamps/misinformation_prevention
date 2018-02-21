@@ -154,6 +154,8 @@ public:
 
 		double start = omp_get_wtime();
 
+        cout << "Max number of threads = " << omp_get_max_threads() << endl;
+
         // generate theta RRC sets
         #pragma omp parallel
         {
