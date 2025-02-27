@@ -1,5 +1,3 @@
-# Misinformation Prevention
-
 # Reverse prevention sampling for misinformation mitigation in social networks
 Code for the paper "Reverse prevention sampling for misinformation mitigation in social networks" in ICDT 2020.
 
